@@ -1,0 +1,14 @@
+<!-- app.vue -->
+<template>
+  <v-app>
+    <NuxtPage />
+  </v-app>
+</template>
+
+<script>
+export default {
+  setup() {
+    // Vuetifyの設定はプラグインで行うため、ここには追加しません
+  }
+}
+</script>

@@ -1,0 +1,70 @@
+<!-- pages/index.vue -->
+<template>
+  <div>
+    <h1>Nurse Call Data</h1>
+    <p v-if="!data.length">Loading data...</p>
+    <table v-if="data.length">
+      <thead>
+        <tr>
+          <th>Call ID</th>
+          <th>Room No</th>
+          <th>Status</th>
+          <th>Creation Time</th>
+          <th>Update Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="row in data" :key="row.id">
+          <td>{{ row.id }}</td>
+          <td>{{ row.room_no }}</td>
+          <td>{{ row.status }}</td>
+          <td>{{ row.creation_time }}</td>
+          <td>{{ row.update_time }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <button @click="addData">Add Data</button>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue';
+import axios from 'axios';
+
+const data = ref([]);
+
+const fetchData = async () => {
+  console.log('Fetching data...');
+  try {
+    const response = await axios.post('http://172.34.0.7:8080/select-tables/', { room: '101' });
+    console.log('Data fetched:', response.data.data);
+    data.value = response.data.data;
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+};
+
+onMounted(() => {
+  fetchData();
+  const intervalId = setInterval(fetchData, 1000); // 1秒ごとにデータを再取得
+
+  // コンポーネントが破棄されるときにインターバルをクリア
+  onBeforeUnmount(() => {
+    clearInterval(intervalId);
+  });
+});
+
+const addData = async () => {
+  try {
+    console.log('Adding data...');
+    const newEntry = {
+      room: '101'
+    };
+    await axios.post('http://172.34.0.7:8080/add-room/', newEntry);
+    // データを再取得して更新する
+    fetchData();
+  } catch (error) {
+    console.error('Error adding data:', error);
+  }
+};
+</script>

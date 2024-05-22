@@ -1,0 +1,9 @@
+// // https://nuxt.com/docs/api/configuration/nuxt-config
+// export default defineNuxtConfig({
+//   devtools: { enabled: true }
+// })
+
+// nuxt.config.js
+export default defineNuxtConfig({
+  // ここに必要な設定を追加してください
+});
