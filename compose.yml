@@ -1,0 +1,62 @@
+# version: "3"
+services:
+
+  mysql-nc:
+    build: ./mysql
+    container_name: mysql-nc
+    environment:
+      MYSQL_DATABASE: test_db
+      MYSQL_USER: test
+      MYSQL_PASSWORD: test
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data-nc:/var/lib/mysql
+    restart: always
+    networks:
+      mynetwork-nc:
+        ipv4_address: 172.34.0.6
+
+  django-nc:
+    build: ./django
+    container_name: django-nc
+    ports:
+      - "8080:8080"
+    command: python3 /usr/django/test.py
+    volumes:
+      - ./django:/usr/django
+    # restart: always
+    networks:
+      mynetwork-nc:
+        ipv4_address: 172.34.0.7
+
+  # フロントエンド用コンテナ
+  nuxt3:
+    build: ./nuxt3
+    container_name: nuxt3-nc
+    volumes:
+      - ./nuxt3:/nuxt3:cached 
+      - node_modules-nc:/nuxt3/node_modules
+    ports:
+      - "3000:3000"
+    tty: true
+    environment:
+      - HOST=0.0.0.0
+      - port=3000
+      - CHOKIDAR_USEPOLLING=true
+    # command: sh -c "pnpm dev"
+    networks:
+      mynetwork-nc:
+        ipv4_address: 172.34.0.8
+
+networks:
+  mynetwork-nc:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.34.0.0/16
+
+volumes:
+  mysql-data-nc: {}
+  node_modules-nc:

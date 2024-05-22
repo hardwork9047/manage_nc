@@ -1,0 +1,6 @@
+mysql-connector-python
+requests
+Django
+gunicorn
+sphinx
+django-cors-headers
