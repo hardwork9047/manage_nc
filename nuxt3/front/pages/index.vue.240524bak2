@@ -1,0 +1,172 @@
+<template>
+  <v-container>
+    <v-row>
+      <v-col>
+        <v-card>
+          <v-card-title>Nurse Call Management System</v-card-title>
+          <v-card-subtitle v-if="!data.length" class="text-gray-500">Loading data...</v-card-subtitle>
+          <v-data-table :headers="headers" :items="data" class="elevation-1">
+            <template v-slot:[`item.actions`]="{ item }">
+              <v-btn :color="getButton1Color(item.status)" class="mr-4" @click="handleButtonClick(item.id, item.status)">
+                {{ getButton1Label(item.status) }}
+              </v-btn>
+              <v-btn color="secondary" class="mr-4" @click="updateStatusToReady(item.id)">Reset</v-btn>
+            </template>
+          </v-data-table>
+          <v-btn @click="addData" class="mt-4" color="primary">Add Data</v-btn>
+          <v-btn @click="clearData" class="mt-4" color="primary">Clear Data</v-btn>
+        </v-card>
+      </v-col>
+    </v-row>
+  </v-container>
+</template>
+
+<script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue';
+import axios from 'axios';
+
+const data = ref([]);
+
+const headers = ref([
+  { text: 'ID', value: 'id' },
+  { text: 'Name', value: 'name' },
+  { text: 'Room No', value: 'room_no' },
+  { text: 'Status', value: 'status' },
+  { text: '処理', value: 'actions', sortable: false }
+]);
+
+const getBaseURL = () => {
+  const hostname = window.location.hostname;
+  if (/^192\./.test(hostname)) {
+    // IPアドレスが192.*.*.*の場合、ポート指定
+    return `${window.location.protocol}//${hostname}:8080`;
+  } else if (/^172\./.test(hostname)) {
+    // IPアドレスが172.*.*.*の場合、固定のIPを使用
+    return `${window.location.protocol}//172.34.0.7:8080`;
+  } else {
+    // その他の場合
+    return `${window.location.origin}`;
+  }
+};
+
+const fetchData = async () => {
+  const baseURL = getBaseURL();
+  console.log('Fetching data...');
+  try {
+    const response = await axios.post(`${baseURL}/select-tables/`, { room: '101' });
+    console.log('Data fetched:', response.data.data);
+    data.value = response.data.data;
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+};
+
+onMounted(() => {
+  fetchData();
+  const intervalId = setInterval(fetchData, 1000); // 1秒ごとにデータを再取得
+
+  // コンポーネントが破棄されるときにインターバルをクリア
+  onBeforeUnmount(() => {
+    clearInterval(intervalId);
+  });
+});
+
+const addData = async () => {
+  const baseURL = getBaseURL();
+  try {
+    console.log('Adding data...');
+    const newEntry = {
+      room: '101'
+    };
+    await axios.post(`${baseURL}/add-room/`, newEntry);
+    // データを再取得して更新する
+    fetchData();
+  } catch (error) {
+    console.error('Error adding data:', error);
+  }
+};
+
+const clearData = async () => {
+  const baseURL = getBaseURL();
+  try {
+    console.log('Clearing data...');
+    const newEntry = {
+      room: '101'
+    };
+    await axios.post(`${baseURL}/update-status-to-clear/`, newEntry);
+    // データを再取得して更新する
+    fetchData();
+  } catch (error) {
+    console.error('Error clearing data:', error);
+  }
+};
+
+const handleButtonClick = async (id, status) => {
+  const baseURL = getBaseURL();
+  try {
+    console.log(`Button clicked for row with id ${id}, status ${status}`);
+    const payload = { id: id };
+
+    // ステータスに応じた処理を行う
+    if (status === 'ready') {
+      await axios.post(`${baseURL}/update-ready-to-work/`, payload); // 適切なエンドポイントに置き換えてください
+    } else if (status === 'work') {
+      await axios.post(`${baseURL}/update-work-to-done/`, payload); // 適切なエンドポイントに置き換えてください
+    } else if (status === 'done') {
+      await axios.post(`${baseURL}/update-status-to-ready/`, payload); // 適切なエンドポイントに置き換えてください
+    }
+
+    console.log('Data posted:', payload);
+  } catch (error) {
+    console.error('Error posting data:', error);
+  }
+};
+
+const updateStatusToReady = async (id) => {
+  const baseURL = getBaseURL();
+  try {
+    console.log(`Button clicked for row with id ${id}`);
+    const payload = { id: id };
+    await axios.post(`${baseURL}/update-status-to-ready/`, payload); // 適切なエンドポイントに置き換えてください
+    console.log('Data posted:', payload);
+  } catch (error) {
+    console.error('Error posting data:', error);
+  }
+};
+
+const getButton1Label = (status) => {
+  switch (status) {
+    case 'ready':
+      return 'Start';
+    case 'work':
+      return 'Done';
+    case 'done':
+      return 'Complete';
+    default:
+      return 'Action';
+  }
+};
+
+const getButton1Color = (status) => {
+  switch (status) {
+    case 'ready':
+      return 'primary';
+    case 'work':
+      return 'warning';
+    case 'done':
+      return 'success';
+    default:
+      return 'default';
+  }
+};
+</script>
+
+<style scoped>
+.v-container {
+  padding: 20px;
+}
+
+.v-btn {
+  margin-right: 16px;
+}
+</style>

@@ -23,7 +23,7 @@ services:
     container_name: django-nc
     ports:
       - "8080:8080"
-    command: python3 /usr/django/test.py
+    command: python3 /usr/django/myapp/manage.py runserver 0.0.0.0:8080
     volumes:
       - ./django:/usr/django
     # restart: always
@@ -45,7 +45,7 @@ services:
       - HOST=0.0.0.0
       - port=3000
       - CHOKIDAR_USEPOLLING=true
-    # command: sh -c "pnpm dev"
+    command: npm run dev
     networks:
       mynetwork-nc:
         ipv4_address: 172.34.0.8

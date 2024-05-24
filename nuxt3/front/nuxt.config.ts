@@ -15,4 +15,7 @@ export default {
     transpile: ['vuetify'],
   },
   plugins: ['~/plugins/vuetify.js'],
+  typescript: {
+    strict: true
+  },
 }
