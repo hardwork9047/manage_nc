@@ -3,7 +3,7 @@
     <v-row>
       <v-col>
         <v-card>
-          <v-card-title>Nurse Call Management System</v-card-title>
+          <v-card-title>Nurse Call Table</v-card-title>
           <v-card-subtitle v-if="!data.length" class="text-gray-500">Loading data...</v-card-subtitle>
           <v-data-table
             dense
@@ -22,12 +22,22 @@
               ></v-text-field>
             </template>
 
-            
+            <template v-slot:[`item.status`]="{ item }">
+              <v-chip
+                :color="getStatusColor(item.status)"
+                dark
+              >
+                {{ item.status }}
+              </v-chip>
+            </template>
+
             <template v-slot:[`item.actions`]="{ item }">
               <v-btn :color="getButton1Color(item.status)" class="mr-4" @click="handleButtonClick(item.id, item.status)">
-                {{ getButton1Label(item.status) }}
+                <template v-if="item.status === 'ready'">START</template>
+                <template v-else-if="item.status === 'work'">DONE</template>
+                <template v-else-if="item.status === 'done'">RESET</template>
               </v-btn>
-              <v-btn color="secondary" class="mr-4" @click="updateStatusToReady(item.id)">Reset</v-btn>
+              <v-btn :color="getResetButtonColor()" class="mr-4" @click="updateStatusToReady(item.id)">RESET</v-btn>
             </template>
           </v-data-table>
           <v-btn @click="addData" class="mt-4" color="primary">Add Data</v-btn>
@@ -36,23 +46,6 @@
       </v-col>
     </v-row>
   </v-container>
-
-  <v-hover>
-  <template v-slot:default="{ isHovering, props }">
-    <v-card
-      v-bind="props"
-      :color="isHovering ? 'primary' : undefined"
-      title="Hover over me"
-      text="..."
-    ></v-card>
-  </template>
-  </v-hover>
-
-  <v-app>
-    <v-container>
-      <v-data-table :items="data"></v-data-table>
-    </v-container>
-  </v-app>
 </template>
 
 <script setup>
@@ -64,12 +57,11 @@ const search = ref('');
 const sortBy = ref([]);
 const sortDesc = ref([]);
 
-
 const headers = [
   { title: 'ID', key: 'id', sortable: true },
   { title: 'Room No', key: 'room_no', sortable: true },
   { title: 'Status', key: 'status', sortable: true },
-  { title: '処理', key: 'actions', sortable: false }
+  { title: 'Actions', key: 'actions', sortable: false }
 ];
 
 const toggleSort = (column) => {
@@ -173,26 +165,41 @@ const updateStatusToReady = async (id) => {
 const getButton1Label = (status) => {
   switch (status) {
     case 'ready':
-      return 'Start';
+      return 'START';
     case 'work':
-      return 'Done';
+      return 'DONE';
     case 'done':
-      return 'Complete';
+      return 'RESET';
     default:
-      return 'Action';
+      return 'ACTION';
   }
 };
 
 const getButton1Color = (status) => {
   switch (status) {
     case 'ready':
-      return 'primary';
+      return 'orange';
     case 'work':
-      return 'warning';
+      return 'green';
     case 'done':
-      return 'success';
+      return 'white';
     default:
       return 'default';
+  }
+};
+
+const getResetButtonColor = () => {
+  return 'white';
+};
+
+const getStatusColor = (status) => {
+  switch (status) {
+    case 'ready':
+      return 'red';
+    case 'work':
+      return 'green';
+    default:
+      return '';
   }
 };
 </script>
@@ -204,9 +211,15 @@ const getButton1Color = (status) => {
 
 .v-btn {
   margin-right: 16px;
+  color: black;
 }
 
 .v-icon.active {
   color: #42b983;
+}
+
+.d-flex {
+  display: flex;
+  align-items: center;
 }
 </style>

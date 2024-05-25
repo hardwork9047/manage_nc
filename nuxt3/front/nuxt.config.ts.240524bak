@@ -10,7 +10,6 @@ export default {
   css: [
     'vuetify/lib/styles/main.sass',
     '@/assets/variables.scss',
-    '@mdi/font/css/materialdesignicons.css',
   ],
   build: {
     transpile: ['vuetify'],
